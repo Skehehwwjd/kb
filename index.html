@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>지역별 토너먼트 대진표</title>
+  <style>
+    body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; margin: 0; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #ddd; padding: 30px; }
+    h1 { text-align: center; color: #333; margin-bottom: 30px; }
+    .regions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+    .region-box { border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+    .region-box h3 { margin: 0 0 10px 0; color: #4e7cff; }
+    textarea { width: 100%; height: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 5px; resize: vertical; }
+    button { display: block; margin: 20px auto; padding: 12px 40px; font-size: 1.1em; background: #4e7cff; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+    .bracket { display: flex; justify-content: center; gap: 40px; margin-top: 30px; }
+    .round { min-width: 200px; }
+    .round-title { font-weight: bold; margin-bottom: 15px; color: #666; }
+    .match { background: #f8f9ff; border: 1px solid #4e7cff; border-radius: 6px; padding: 12px; margin: 15px 0; text-align: center; }
+    .bye { color: #999; font-style: italic; }
+    @media (max-width: 768px) {
+      .regions { grid-template-columns: 1fr; }
+      .bracket { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>지역별 토너먼트 대진표 생성기</h1>
+    
+    <!-- 지역별 입력 영역 -->
+    <div class="regions">
+      <div class="region-box">
+        <h3>지역 A</h3>
+        <textarea id="regionA" placeholder="참가자 이름을 줄바꿈으로 입력"></textarea>
+      </div>
+      <div class="region-box">
+        <h3>지역 B</h3>
+        <textarea id="regionB" placeholder="참가자 이름을 줄바꿈으로 입력"></textarea>
+      </div>
+      <div class="region-box">
+        <h3>지역 C</h3>
+        <textarea id="regionC" placeholder="참가자 이름을 줄바꿈으로 입력"></textarea>
+      </div>
+    </div>
+
+    <button onclick="generateBracket()">대진표 생성</button>
+    <div id="bracketResult"></div>
+  </div>
+
+  <script>
+    function generateBracket() {
+      // 1. 모든 지역 참가자 수집
+      const regions = {
+        A: document.getElementById('regionA').value.split('\n').filter(n => n.trim()),
+        B: document.getElementById('regionB').value.split('\n').filter(n => n.trim()),
+        C: document.getElementById('regionC').value.split('\n').filter(n => n.trim())
+      };
+
+      // 2. 모든 참가자 합치고 랜덤 섞기
+      let allPlayers = [...regions.A, ...regions.B, ...regions.C];
+      allPlayers = allPlayers.sort(() => Math.random() - 0.5);
+
+      // 3. 최종 인원이 홀수면 부전승 추가
+      if (allPlayers.length % 2 !== 0) {
+        allPlayers.push("부전승 (다음 라운드 진출)");
+      }
+
+      // 4. 토너먼트 라운드 생성
+      let rounds = [];
+      let currentRound = allPlayers;
+      
+      while(currentRound.length > 1) {
+        rounds.push(currentRound);
+        let nextRound = [];
+        
+        for (let i = 0; i < currentRound.length; i += 2) {
+          if (currentRound[i+1]) {
+            nextRound.push(`${currentRound[i]} vs ${currentRound[i+1]}`);
+          } else {
+            nextRound.push(`${currentRound[i]} (부전승)`);
+          }
+        }
+        
+        currentRound = nextRound;
+      }
+
+      // 5. HTML 출력
+      let html = '<div class="bracket">';
+      rounds.forEach((round, idx) => {
+        html += `
+          <div class="round">
+            <div class="round-title">${idx+1}라운드 (${round.length}팀)</div>
+            ${round.map(match => `
+              <div class="match">${match.includes('부전승') ? `<span class="bye">${match}</span>` : match}</div>
+            `).join('')}
+          </div>`;
+      });
+      html += '</div>';
+      
+      document.getElementById('bracketResult').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
