@@ -2,102 +2,325 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>지역별 토너먼트 대진표</title>
+  <title>종목별 토너먼트 대진표 생성기</title>
   <style>
-    body { font-family: 'Noto Sans KR', sans-serif; background: #f5f6fa; margin: 0; padding: 20px; }
-    .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #ddd; padding: 30px; }
-    h1 { text-align: center; color: #333; margin-bottom: 30px; }
-    .regions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-    .region-box { border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
-    .region-box h3 { margin: 0 0 10px 0; color: #4e7cff; }
-    textarea { width: 100%; height: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 5px; resize: vertical; }
-    button { display: block; margin: 20px auto; padding: 12px 40px; font-size: 1.1em; background: #4e7cff; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
-    .bracket { display: flex; justify-content: center; gap: 40px; margin-top: 30px; }
-    .round { min-width: 200px; }
-    .round-title { font-weight: bold; margin-bottom: 15px; color: #666; }
-    .match { background: #f8f9ff; border: 1px solid #4e7cff; border-radius: 6px; padding: 12px; margin: 15px 0; text-align: center; }
-    .bye { color: #999; font-style: italic; }
-    @media (max-width: 768px) {
-      .regions { grid-template-columns: 1fr; }
-      .bracket { flex-direction: column; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f5f6fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #ddd;
+      padding: 30px;
+      overflow-x: auto;
+      box-sizing: border-box;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+    .input-group {
+      margin-bottom: 25px;
+      text-align: center;
+    }
+    .input-group label {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    .input-group input[type="text"] {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #aaa;
+      width: 220px;
+    }
+    .teams {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .team-box {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 8px;
+      position: relative;
+      background: #f9f9fb;
+    }
+    .team-box h3 {
+      margin: 0 0 10px 0;
+      color: #4e7cff;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      resize: vertical;
+    }
+    .remove-btn {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      background: #ff5a5a;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.1em;
+      line-height: 1;
+    }
+    .add-btn {
+      display: block;
+      margin: 0 auto 20px auto;
+      padding: 10px 30px;
+      font-size: 1.1em;
+      background: #4e7cff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button.generate {
+      display: block;
+      margin: 20px auto;
+      padding: 12px 40px;
+      font-size: 1.1em;
+      background: #4e7cff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .bracket-title {
+      text-align: center;
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .bracket-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-top: 32px;
+      width: 100%;
+      box-sizing: border-box;
+      justify-content: flex-start;
+    }
+    .bracket-card {
+      background: #f9f9fb;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px #eee;
+      padding: 16px 10px 10px 10px;
+      flex-basis: 48%;
+      max-width: 48%;
+      min-width: 250px;
+      box-sizing: border-box;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: visible;
+    }
+    .bracket-card .bracket-title {
+      margin-top: 0;
+    }
+    .bracket-card .delete-bracket-btn {
+      background: #ff5a5a;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 4px 14px;
+      font-size: 0.9em;
+      cursor: pointer;
+      margin-bottom: 10px;
+      margin-top: -6px;
+      align-self: flex-end;
+    }
+    .bracket {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+    .round {
+      min-width: 150px;
+      max-width: 200px;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+    }
+    .round-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #666;
+      font-size: 0.95em;
+      text-align: center;
+    }
+    .match {
+      background: #f8f9ff;
+      border: 1px solid #4e7cff;
+      border-radius: 6px;
+      padding: 8px;
+      margin: 10px 0;
+      text-align: center;
+      font-size: 0.95em;
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+    .bye {
+      color: #999;
+      font-style: italic;
+    }
+    @media (max-width: 1100px) {
+      .bracket-list { gap: 12px; }
+      .bracket-card { flex-basis: 100%; max-width: 100%; }
+    }
+    @media (max-width: 700px) {
+      .teams { grid-template-columns: 1fr; }
+      .bracket-list { flex-direction: column; gap: 0; }
+      .bracket-card { width: 100%; min-width: 0; max-width: 100%; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>지역별 토너먼트 대진표 생성기</h1>
-    
-    <!-- 지역별 입력 영역 -->
-    <div class="regions">
-      <div class="region-box">
-        <h3>지역 A</h3>
-        <textarea id="regionA" placeholder="참가자 이름을 줄바꿈으로 입력"></textarea>
-      </div>
-      <div class="region-box">
-        <h3>지역 B</h3>
-        <textarea id="regionB" placeholder="참가자 이름을 줄바꿈으로 입력"></textarea>
-      </div>
-      <div class="region-box">
-        <h3>지역 C</h3>
-        <textarea id="regionC" placeholder="참가자 이름을 줄바꿈으로 입력"></textarea>
-      </div>
+    <h1>종목별 토너먼트 대진표 생성기</h1>
+    <div class="input-group">
+      <label for="eventName">종목명:</label>
+      <input type="text" id="eventName" placeholder="예: 축구, 농구 등">
     </div>
-
-    <button onclick="generateBracket()">대진표 생성</button>
-    <div id="bracketResult"></div>
+    <button class="add-btn" onclick="addTeam()">+ 팀 추가</button>
+    <div class="teams" id="teams"></div>
+    <button class="generate" onclick="generateBracket()">대진표 생성</button>
+    <div class="bracket-list" id="bracketList"></div>
   </div>
 
   <script>
+    let teamCount = 0;
+    let bracketId = 0;
+
+    function addTeam() {
+      teamCount++;
+      const teamsDiv = document.getElementById('teams');
+      const teamBox = document.createElement('div');
+      teamBox.className = 'team-box';
+      teamBox.id = `teamBox${teamCount}`;
+      teamBox.innerHTML = `
+        <h3 contenteditable="true" spellcheck="false">팀 ${teamCount}</h3>
+        <textarea placeholder="참가자 이름을 줄바꿈으로 입력"></textarea>
+        <button class="remove-btn" onclick="removeTeam('${teamBox.id}')">&times;</button>
+      `;
+      teamsDiv.appendChild(teamBox);
+      updateTeamGrid();
+    }
+
+    function removeTeam(id) {
+      const box = document.getElementById(id);
+      if (box) box.remove();
+      updateTeamGrid();
+    }
+
+    function updateTeamGrid() {
+      const teamsDiv = document.getElementById('teams');
+      const count = teamsDiv.children.length;
+      if (count <= 1) {
+        teamsDiv.style.gridTemplateColumns = '1fr';
+      } else if (count === 2) {
+        teamsDiv.style.gridTemplateColumns = '1fr 1fr';
+      } else {
+        teamsDiv.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      }
+    }
+
+    window.onload = function() {
+      addTeam();
+      addTeam();
+    };
+
     function generateBracket() {
-      // 1. 모든 지역 참가자 수집
-      const regions = {
-        A: document.getElementById('regionA').value.split('\n').filter(n => n.trim()),
-        B: document.getElementById('regionB').value.split('\n').filter(n => n.trim()),
-        C: document.getElementById('regionC').value.split('\n').filter(n => n.trim())
-      };
-
-      // 2. 모든 참가자 합치고 랜덤 섞기
-      let allPlayers = [...regions.A, ...regions.B, ...regions.C];
+      const eventName = document.getElementById('eventName').value.trim();
+      if (!eventName) {
+        alert('종목명을 입력하세요!');
+        return;
+      }
+      const teamBoxes = document.querySelectorAll('.team-box');
+      let allPlayers = [];
+      teamBoxes.forEach(box => {
+        const names = box.querySelector('textarea').value.split('\n').map(n => n.trim()).filter(n => n);
+        names.forEach(name => {
+          if (name) allPlayers.push(`${name}팀`);
+        });
+      });
+      if (allPlayers.length < 2) {
+        alert('참가자를 2명 이상 입력하세요.');
+        return;
+      }
       allPlayers = allPlayers.sort(() => Math.random() - 0.5);
-
-      // 3. 최종 인원이 홀수면 부전승 추가
       if (allPlayers.length % 2 !== 0) {
         allPlayers.push("부전승 (다음 라운드 진출)");
       }
-
-      // 4. 토너먼트 라운드 생성
       let rounds = [];
-      let currentRound = allPlayers;
-      
+      let currentRound = [...allPlayers];
       while(currentRound.length > 1) {
-        rounds.push(currentRound);
-        let nextRound = [];
-        
+        let matches = [];
         for (let i = 0; i < currentRound.length; i += 2) {
           if (currentRound[i+1]) {
-            nextRound.push(`${currentRound[i]} vs ${currentRound[i+1]}`);
+            matches.push(`${currentRound[i]} vs ${currentRound[i+1]}`);
           } else {
-            nextRound.push(`${currentRound[i]} (부전승)`);
+            matches.push(`${currentRound[i]} (부전승)`);
           }
         }
-        
-        currentRound = nextRound;
+        rounds.push(matches);
+        currentRound = matches.map(match => {
+          if (match.includes('vs')) {
+            return match.split('vs')[0].trim() + '/' + match.split('vs')[1].replace(/\(.*\)/, '').trim();
+          } else {
+            return match.replace(/\(.*\)/, '').trim();
+          }
+        });
       }
+      bracketId++;
+      const bracketDiv = document.createElement('div');
+      bracketDiv.className = 'bracket-card';
+      bracketDiv.id = `bracket${bracketId}`;
+      bracketDiv.innerHTML = `
+        <button class="delete-bracket-btn" onclick="deleteBracket('${bracketDiv.id}')">삭제</button>
+        <div class="bracket-title">${eventName} 대진표</div>
+        <div class="bracket">
+          ${rounds.map((round, idx) => `
+            <div class="round">
+              <div class="round-title">${idx+1}라운드 (${round.length}경기)</div>
+              ${round.map(match => `
+                <div class="match">${match.includes('부전승') ? `<span class="bye">${match}</span>` : match}</div>
+              `).join('')}
+            </div>
+          `).join('')}
+        </div>
+      `;
+      document.getElementById('bracketList').appendChild(bracketDiv);
+      document.getElementById('eventName').value = '';
+      document.getElementById('teams').innerHTML = '';
+      addTeam();
+      addTeam();
+    }
 
-      // 5. HTML 출력
-      let html = '<div class="bracket">';
-      rounds.forEach((round, idx) => {
-        html += `
-          <div class="round">
-            <div class="round-title">${idx+1}라운드 (${round.length}팀)</div>
-            ${round.map(match => `
-              <div class="match">${match.includes('부전승') ? `<span class="bye">${match}</span>` : match}</div>
-            `).join('')}
-          </div>`;
-      });
-      html += '</div>';
-      
-      document.getElementById('bracketResult').innerHTML = html;
+    function deleteBracket(id) {
+      const bracket = document.getElementById(id);
+      if (bracket) bracket.remove();
     }
   </script>
 </body>
